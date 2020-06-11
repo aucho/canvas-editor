@@ -1,24 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import Canvas from './canvas'
+import Uploader from './uploader';
+import ToolBar from './toolBar'
 import './App.css';
 
+
 function App() {
+  //===============================！！！此处改为false
+  const [isImgUpload, setImgUpload] = useState(true) // 是否有图片上传
+  const [imgFile, setImgFile] = useState()           // 存储图片文件
+  const [imgBase64, setImgBase64] = useState()       // base64编码
+
+  useEffect(() => {
+    const reader = new FileReader()
+    if (imgFile){
+      reader.readAsDataURL(imgFile)
+      reader.onload = e =>{ 
+        setImgBase64(e.target.result)
+      }
+    }
+  })
+  
+  const imgUpload = file => {
+    setImgFile(file)
+    setImgUpload(true)
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {
+        isImgUpload?
+        <>
+          <ToolBar />
+          <Canvas imgBase64={imgBase64} />
+        </>
+        : <Uploader handleImgUpload={imgUpload} />
+      }
     </div>
   );
 }

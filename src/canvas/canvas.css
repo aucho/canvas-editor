@@ -1,0 +1,19 @@
+.canvas-container{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+
+.main-canvas {
+  background-color: #fff;
+  cursor: default;
+  /* box-shadow: 0 0 8px #000; */
+}
+.canvas-container:hover .main-canvas{
+  outline: 3px solid #337;
+}
+
+.canvas-border{
+  position: absolute;
+}

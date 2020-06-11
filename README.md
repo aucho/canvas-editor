@@ -1,4 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 兼容性
+
+IE 10 及 safari 6.0 以下 不兼容 
 
 ## Available Scripts
 
