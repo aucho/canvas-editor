@@ -1,8 +1,10 @@
 .canvas-container{
   position: absolute;
-  left: 50%;
+  /* left: 100px;
+  top: 100px; */
+  /* left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%); */
 }
 
 .main-canvas {

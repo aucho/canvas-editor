@@ -4,7 +4,6 @@ import Uploader from './uploader';
 import ToolBar from './toolBar'
 import './App.css';
 
-
 function App() {
   //===============================！！！此处改为false
   const [isImgUpload, setImgUpload] = useState(true) // 是否有图片上传

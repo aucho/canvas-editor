@@ -27,7 +27,7 @@ function Canvas(props) {
   //   left: [number], 当前左边距
   // }
 
-  [ imgPos, setImgPos ] =useState({moveable:false, isMoving: false}),
+  [ imgPos, setImgPos ] =useState({moveable:false, isMoving: false, left:'100px',top:'100px'}),
 
   // resizeParam = {
   //   resizeable;:默认 true
@@ -59,7 +59,7 @@ function Canvas(props) {
         // 更新长宽
         setHeight(img.height)
         setWidth(img.width)
-      }      
+      }
     }
   })
 
