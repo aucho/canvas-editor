@@ -1,5 +1,11 @@
 .tool-bar{
   position: fixed;
   height: 60px;
+<<<<<<< HEAD
   background-color: #f5f5f5;
+=======
+  width: 100%;
+  background-color: #e5e5e5;
+  box-shadow: 0 0 3px #666;
+>>>>>>> 155ebd235dc802ffea0c7ac7c3d3f20c44e1d0e7
 }

@@ -90,8 +90,13 @@ function MainCanvas(props) {
     statusMethods[DURING] = () => {
       if (!pen.isDrawing) return
       // 鼠标点位计算
+<<<<<<< HEAD
       const offsetX = e.pageX-(e.target.parentElement.offsetLeft-width/2)
       const offsetY = e.pageY-(e.target.parentElement.offsetTop-height/2)
+=======
+      const offsetX = e.pageX-(e.target.parentElement.offsetLeft)  //居中样式打开还需要 -1/2*width
+      const offsetY = e.pageY-(e.target.parentElement.offsetTop)   //
+>>>>>>> 155ebd235dc802ffea0c7ac7c3d3f20c44e1d0e7
 
       // 存储一个点的坐标；换算为比例 存储到数组里；左上角为坐标原点
       setPath([...path, {xProportion: offsetX/width, yProportion: offsetY/height}])
