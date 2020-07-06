@@ -29,6 +29,7 @@ function MainCanvas(props) {
   const { START, DURING, END, NO_RE } = STATUS
   const canvas = React.createRef()
 
+  // console.log(paths)
   useEffect(()=>{
     // getcontext  获取canvas绘制接口
     setCtx(canvas.current.getContext('2d'))
@@ -100,9 +101,11 @@ function MainCanvas(props) {
 
     //-------------鼠标离开或松开 关闭绘画模式---------------
     statusMethods[END] = () => {
+      if (!pen.isDrawing) return
       setPen({...pen, isDrawing: false, lastX: null, lastY: null})
       // 存储一整条轨迹
       setPaths([...paths, path])
+      setPath([])
     }
     statusMethods[status]()
   }

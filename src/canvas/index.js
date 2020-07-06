@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { CONFIGS, POSITIONS, STATUS } from '../utils/config'
 import Borders from './Borders'
 import MainCanvas from './MainCanvas'
-import Skectchpad from './Sketchpad'
 import './canvas.css'
 
 const { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, DEFAULT_IMG_URL, DEFAULT_CANVAS_OUTLINE } = CONFIGS
@@ -15,6 +14,7 @@ for (let pos in POSITIONS){
 
 function Canvas(props) {
   const [ pos, setpos ] = useState({}),   // 动作开始前的 鼠标初始位置
+  [ isInk, setIsInk ] = useState(false),
   [ height, setHeight ] = useState(DEFAULT_CANVAS_HEIGHT), // 高
   [ width, setWidth ] = useState(DEFAULT_CANVAS_WIDTH),    // 宽
 
@@ -50,6 +50,7 @@ function Canvas(props) {
   { imgBase64 = DEFAULT_IMG_URL } = props,
   outline = DEFAULT_CANVAS_OUTLINE,    // 图像非占位边框宽度
   { left, top } = imgPos;      // 图像定位
+
   // 加载（更新）图片
   useEffect(()=>{
     if(img.src!==imgBase64){
@@ -112,22 +113,22 @@ function Canvas(props) {
     // 8个边缘位置点击以重置大小各自的方法
     const resizeMethods = {};
     // 右
-    resizeMethods[POSITIONS.right] = e => { 
+    resizeMethods[POSITIONS.right] = e => {
       setWidth(originWidth + e.pageX - pos.x)
       setImgPos({...imgPos})
     }
     // 下
-    resizeMethods[POSITIONS.bottom] = e => { 
+    resizeMethods[POSITIONS.bottom] = e => {
       setHeight(originHeight + e.pageY - pos.y)
       setImgPos({...imgPos})
-     }
+    }
     // 上
-    resizeMethods[POSITIONS.top] = e => { 
+    resizeMethods[POSITIONS.top] = e => {
       setHeight(originHeight + pos.y - e.pageY)
       setImgPos({...imgPos, top: originTop + e.pageY - pos.y}) 
     }
     // 左
-    resizeMethods[POSITIONS.left] = e => { 
+    resizeMethods[POSITIONS.left] = e => {
       setWidth(originWidth + pos.x - e.pageX)
       setImgPos({...imgPos, left: originLeft + e.pageX - pos.x}) 
     }
@@ -159,6 +160,7 @@ function Canvas(props) {
     switch (status) {
       case START:
         console.log('start')
+        console.log(e.target.offsetParent.offsetTop)
         setResizeParam({ 
           ...resizeParam,
           isResizing:true,
@@ -173,12 +175,11 @@ function Canvas(props) {
           y: e.pageY,
         })
         setImgPos({
-          top: e.offsetTop,
-          left: e.offsetLeft,
+          top: e.target.offsetParent.offsetTop,
+          left: e.target.offsetParent.offsetLeft,
         })
         break
       case END: setResizeParam({ ...resizeParam, isResizing:false})
-      console.log('end')
         break
       case DURING:
         if (isResizing){
@@ -189,6 +190,20 @@ function Canvas(props) {
     }
   }
 
+  // 撤销
+  function undo(e, step='one') {
+    if (step === 'one'){
+      const newPaths = JSON.parse(JSON.stringify(paths))
+      newPaths.pop()
+      setPaths(newPaths)
+      setHeight(height+1)
+    }
+    if (step === 'all'){
+      setPaths([])
+      setHeight(height+1)
+    }
+  }
+
   return (
     <div style={{width, height, left, top, padding:outline}}
       className="canvas-container"
@@ -196,15 +211,19 @@ function Canvas(props) {
       onMouseMove={e => imgPos.moveable && rePosition(e, DURING)}
       onMouseLeave={e => imgPos.moveable && rePosition(e, END)}
       onMouseUp={e => imgPos.moveable && rePosition(e, END)}>
-      <MainCanvas img={img} width={width} height={height} paths={paths} setPaths={setPaths}/>
+      <MainCanvas img={img} width={width} height={height} paths={paths} isInk setPaths={setPaths}/>
       {/* 拖拽处 */}
       {borderPositions.map(pos => {
         return <Borders key={pos}
                 imgWidth={width} 
-                imgHeight={height} 
+                imgHeight={height}
                 pos={pos}
                 resize={resize}/>
       })}
+      <button onClick={undo}>回退</button>
+      <button onClick={()=>undo(null, 'all')}>清除</button>
+      <button onClick={()=>setImgPos({...imgPos, moveable: true})}>画笔</button>
+      <button onClick={undo}>拖拽</button>
     </div>
   )
 }
