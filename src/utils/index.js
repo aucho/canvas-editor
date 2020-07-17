@@ -9,6 +9,28 @@ function throttle(fn, timeGap=500, showWarn=false){
   }
 }
 
+function deepCopy(obj){
+  return JSON.parse(JSON.stringify(obj))
+}
+/**
+ * 
+ * @param {*} a 传三条边长 求前两条边夹角角度
+ */
+function calcAngle(a, b, c){
+  const angle = (a*a + b*b - c*c) / 2*a*b
+  return Math.acos(angle)
+}
+
+/**
+ * 传两点坐标求边长
+ */
+function calEdge(x1, y1, x2, y2){
+  return Math.sqrt((x1-x2) * (x1-x2) + (y1-y2) * (y1-y2))
+}
+
 export {
-  throttle
+  throttle,
+  deepCopy,
+  calcAngle,
+  calEdge,
 }

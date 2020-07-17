@@ -1,11 +1,11 @@
 .App {
   text-align: center;
-  background-color: #b5b5b5;
+  background-color: rgb(82,86,89);
   min-height: 100vh;
 }
 
 .icon {
-  width: 1em; height: 1em;
+  width: 1.5em; height: 1.5em;
   vertical-align: -0.15em;
   fill: currentColor;
   overflow: hidden;

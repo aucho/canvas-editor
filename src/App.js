@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Canvas from './canvas'
 import Uploader from './uploader';
-import ToolBar from './toolBar'
 import './App.css';
 
 function App() {
@@ -9,6 +8,7 @@ function App() {
   const [isImgUpload, setImgUpload] = useState(true) // 是否有图片上传
   const [imgFile, setImgFile] = useState()           // 存储图片文件
   const [imgBase64, setImgBase64] = useState()       // base64编码
+  const [cursor, setCursor] = useState()             // 鼠标图案
 
   useEffect(() => {
     const reader = new FileReader()
@@ -24,14 +24,16 @@ function App() {
     setImgFile(file)
     setImgUpload(true)
   }
+
+  const changeCursor = cursor => {
+    setCursor(cursor)
+  }
+
   return (
-    <div className="App">
+    <div className="App" style={{cursor}}>
       {
         isImgUpload?
-        <>
-          <ToolBar />
-          <Canvas imgBase64={imgBase64} />
-        </>
+          <Canvas imgBase64={imgBase64} changeCursor={changeCursor}/>
         : <Uploader handleImgUpload={imgUpload} />
       }
     </div>

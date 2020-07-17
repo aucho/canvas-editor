@@ -10,12 +10,20 @@
 .main-canvas {
   background-color: #fff;
   cursor: default;
-  /* box-shadow: 0 0 8px #000; */
+  box-shadow: 0 0 8px #333;
 }
 .canvas-container:hover .main-canvas{
-  outline: 3px solid #337;
+  box-shadow: 0 0 8px #000;  
 }
-
 .canvas-border{
   position: absolute;
+}
+.canvas-text-input{
+  outline: none;
+  text-align: left;
+  min-height: 12px;
+  min-width: 20px;
+  position: absolute;
+  /* max-width: 20vw; */
+  background-color: rgba(0,0,0,0);
 }
