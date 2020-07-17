@@ -8,9 +8,17 @@
 }
 
 .main-canvas {
-  background-color: #fff;
+  z-index: 1;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0);
   cursor: default;
   box-shadow: 0 0 8px #333;
+}
+.img-canvas {
+  position: absolute;
+  background-color: #fff;
+  cursor: default;
+  box-shadow: 0 0 8px #333; ;
 }
 .canvas-container:hover .main-canvas{
   box-shadow: 0 0 8px #000;  

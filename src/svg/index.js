@@ -8,5 +8,6 @@ import { ReactComponent as Backward } from './backward.svg'
 import { ReactComponent as Clear } from './clear.svg'
 import { ReactComponent as Resize } from './resize.svg'
 import { ReactComponent as Rotate } from './rotate.svg'
+import { ReactComponent as Color } from './color.svg'
 
-export { ZoomIn, ZoomOut, Move, Pen, Text, Rectangle, Backward, Clear, Resize, Rotate }
+export { ZoomIn, ZoomOut, Move, Pen, Text, Rectangle, Backward, Clear, Resize, Rotate, Color }

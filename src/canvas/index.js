@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { CONFIGS, POSITIONS, STATUS, PEN_TYPE } from '../utils/config'
-import { throttle, calcAngle, calEdge } from '../utils'
+import React, { useState, useEffect } from 'react'
+import { CONFIGS, POSITIONS, STATUS, PEN_TYPE, ACTION_TYPE, COLORS } from '../utils/config'
 import ToolBar from './toolBar'
 import Borders from './Borders'
 import MainCanvas from './MainCanvas'
+import ImgCanvas from './ImgCanvas'
 import './canvas.css'
 
 const { DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, DEFAULT_IMG_URL, DEFAULT_CANVAS_OUTLINE } = CONFIGS
-const { START, DURING, END, NO_RE } = STATUS
+const { START, DURING, END } = STATUS
 const { PEN, RECTANGLE_STROKE, TEXT } = PEN_TYPE
+const { MOVE, PAINT, RESIZE } = ACTION_TYPE
+const { BLACK } = COLORS
 // 边缘位置数据处理 支持拖拽的八块区域
 const borderPositions = []
 for (let pos in POSITIONS){
@@ -26,7 +28,7 @@ function Canvas(props) {
     radius: 3,     //笔大小
     fontSize: 18,
     fontFamily: 'microsoft YaHei',
-    rgb: 'rgb(0,0,255,1)',
+    rgb: BLACK,
     x: 0,          //记录当前点和上一个点的坐标值
     y: 0,
     lastX: null,
@@ -59,13 +61,13 @@ function Canvas(props) {
   //   originLeft:[number]
   //   selectedBorderPos: POSITIONS.top, 拖拽的边
   // }
-  [ resizeParam, setResizeParam ] =useState({isResizing: false, isRotating: false, resizeable: false}),
-
+  [ resizeParam, setResizeParam ] =useState({isResizing: false, isRotating: false }),
+  [ resizeable, setResizeable ] = useState(false),
   // zoomIndex= 7,
   // zoomSizeArray = [];  // 存一下当前的 缩放比例数组中 取值的位置
   [ zoomParam, setZoomParam ] = useState({zoomIndex: 7, zoomSizeArray: []}),
 
-  [ img, setImg ] = useState(new Image()),        // 图片对象
+  [ img ] = useState(new Image()),        // 图片对象
 
   // paths = [
   // {
@@ -79,7 +81,7 @@ function Canvas(props) {
 
   [ pathHistory, setPathHistory ] = useState([]), // 轨迹改变时存轨迹的历史状态
 
-  // [ tempVariable, setTempVariable] = useState([]),// 临时
+  [ action, setAction] = useState(MOVE),            // 按钮选取状态
   
   // 存图像缩放后尺寸序列
   zoomRatioRange = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2, 2.5, 3, 4, 5],
@@ -103,27 +105,28 @@ function Canvas(props) {
 
   // 自由变化 监听
   useEffect(() => {
-    if (resizeParam.resizeable){
+    if (resizeable){
       // 表示旋转开始
-      document.onmousedown = e => !imgPos.isMoving && resize(e, 'rotateStart')
+      document.onmousedown = e => {
+        !imgPos.isMoving && resize(e, 'rotateStart')
+      }
       // 长宽变换
-      document.onmousemove= e => resize(e, DURING)
-      document.onmouseup= e => resize(e, END)
+      document.onmousemove= e => resizeable && resize(e, DURING)
+      document.onmouseup= e => resizeable && resize(e, END)
     }
   })
 
   // 滚动监听 暂时搁置
-  useEffect(()=>{
-    // window.removeEventListener('mousewheel',handleScroll, { passive: false })
-    // window.addEventListener('mousewheel', handleScroll, { passive: false })
-    // 火狐
-    // window.addEventListener('DOMMouseScroll', e=>console.log(e))
-  },[zoomParam])
+  // useEffect(()=>{
+  //   // window.removeEventListener('mousewheel',handleScroll, { passive: false })
+  //   // window.addEventListener('mousewheel', handleScroll, { passive: false })
+  //   // 火狐
+  //   // window.addEventListener('DOMMouseScroll', e=>console.log(e))
+  // },[zoomParam])
 
   // 该函数需在width和height初始化更新以及拖拽更新时执行
   // 更新所有缩放比例下的宽高
   function setZoomSizeArray(width, height){
-    console.log('enter')
     const
       { zoomIndex } = zoomParam,
       oriWidth = width/zoomRatioRange[zoomIndex],
@@ -191,6 +194,9 @@ function Canvas(props) {
 
   // 拖拽重置大小
   function resize(e, status, positon = resizeParam.selectedBorderPos) {
+    if (!resizeable){
+      return
+    }
     const { isResizing, originTop, originAngle, originLeft, originWidth, originHeight, isRotating } = resizeParam
     // 8个边缘位置点击以重置大小各自的方法
     const resizeMethods = {};
@@ -279,7 +285,6 @@ function Canvas(props) {
           if(imgPos.isMoving)
             return
           if (isResizing){
-            console.log(isResizing)
             resizeMethods[positon](e)
           }
           else if (isRotating){
@@ -291,13 +296,11 @@ function Canvas(props) {
                               Math.atan((e.pageY - canvasMidCoord.y) / (e.pageX - canvasMidCoord.x)):
                               Math.atan((e.pageY - canvasMidCoord.y) / (e.pageX - canvasMidCoord.x)) + Math.PI
             const newAngle = originAngle + (angleNow-anglePre)/(Math.PI*2)*360
-            console.log(newAngle)
             setRotateAngle(newAngle)
           }
           break
         case END:
-          console.log('end')
-          setResizeParam({ ...resizeParam, isResizing:false, isRotating: false})
+          setResizeParam({ ...resizeParam, originAngle:null, isResizing:false, isRotating: false})
           setZoomSizeArray(width, height)
           break
       default: return
@@ -335,27 +338,35 @@ function Canvas(props) {
       ...pen,
       penType,
     })
+    setAction(PAINT)
+    setResizeable(false)
+  }
+  // 换色
+  function setPenStyle(style) {
+    setPen({
+      ...pen,
+      ...style
+    })
   }
 
   // 拖拽
   function setDrag() {
     setIsInk(false);
     setImgPos({...imgPos, moveable: true})
+    setResizeable(false)
+    setAction(MOVE)
   }
   // 拖拽放大缩小
   function setResize() {
     setIsInk(false)
     // changeCursor(`url('curve.png')`)
-    setResizeParam({
-      ...resizeParam,
-      resizeable: true,
-    })
+    setResizeable(true)
+    setAction(RESIZE)
   }
   // 放大缩小
   function zoom(isEnlarge) {
     let { zoomIndex, zoomSizeArray } = zoomParam
     if (!zoomSizeArray||zoomSizeArray.length<=0){
-      console.warn('empty zoom Array')
       return
     }
     if ((!isEnlarge && zoomIndex<=0)
@@ -370,14 +381,21 @@ function Canvas(props) {
 
   return (
     <>
+    <div className="background-layer"/>
     <div style={{width, height, left, top, padding:outline, transform: `rotate(${rotateAngle}deg)`}}
       className="canvas-container"
       onMouseDown = {e => imgPos.moveable && rePosition(e, START)}
       onMouseMove = {e => imgPos.moveable && rePosition(e, DURING)}
       onMouseLeave= {e => imgPos.moveable && rePosition(e, END)}
       onMouseUp   = {e => imgPos.moveable && rePosition(e, END)}>
-      <MainCanvas
+      <ImgCanvas
         img={img}
+        width={width}
+        height={height}
+        shouldUpdate={shouldUpdate}
+        setShouldUpdate={setShouldUpdate} />
+      <MainCanvas
+        // img={img}
         width={width}
         height={height}
         paths={paths}
@@ -391,7 +409,7 @@ function Canvas(props) {
         pen={pen}
         setPen={setPen}/>
       {/* 拖拽处 */}
-      {resizeParam.resizeable &&
+      {resizeable &&
       borderPositions.map(pos => {
         return <Borders key={pos}
                   imgWidth={width}
@@ -402,15 +420,18 @@ function Canvas(props) {
       })}
     </div>
     <ToolBar
+      pen = {pen}
+      isInk = {isInk}
       zoom = {zoom}
       undo = {undo}
       clear= {clear}
       drag = {setDrag}
       rotate = {rotate}
       setDraw= {setDraw}
+      setPen = {setPenStyle}
       resize = {setResize}
+      action = {action}
       />
-    <button onClick={()=>{console.log(resizeParam)}}>按</button>
     </>
   )
 }

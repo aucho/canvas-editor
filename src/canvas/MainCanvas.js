@@ -13,7 +13,6 @@ function MainCanvas(props) {
   const [ctx, setCtx] = useState()
   const [path, setPath] = useState({ type: PEN, trail:[] }) //存储一条轨迹上的点
   const [inputParams, setInputParams] = useState([])
-  const [addInput, setAddInput] = useState(false)
   // const [inputParams, setInputParams] = useState({ 
   //   maxWidth: '600px', 
   //   height: 'auto',
@@ -49,8 +48,8 @@ function MainCanvas(props) {
   // }
 
   // 初始化样式方法
-  const initStyle = useCallback(() => {
-    const { rgb, fontSize, fontFamily } = pen
+  const initStyle = useCallback((style={})=> {
+    const { rgb=pen.rgb, fontSize=pen.fontSize, fontFamily=pen.fontFamily } = style
     ctx.fillStyle = rgb
     ctx.strokeStyle = rgb
     ctx.font = `${fontSize}px ${fontFamily}`
@@ -58,8 +57,8 @@ function MainCanvas(props) {
 
   // canvas更新
   const updateCanvas = useCallback(() => {
-    ctx.drawImage(img, 0, 0, width, height)
     // 画布更新后 重新绘制缓存的轨迹
+    ctx.clearRect(0,0,width, height)
     setInputParams([])
     let tempInputParams = []
     if (paths.length > 0){
@@ -103,7 +102,7 @@ function MainCanvas(props) {
           // }
         }
         // execute
-        initStyle()
+        initStyle(path.pen)
         reDraw[type]()
       })
       setInputParams(tempInputParams)
@@ -115,21 +114,13 @@ function MainCanvas(props) {
       ctx.beginPath()
       ctx.strokeRect(startX*width, startY*height, (endX-startX)*width, (endY-startY)*height)
     }
-  },[ctx, width, height, img, paths, path, pen, initStyle])
+  },[ctx, width, height, paths, path, pen, initStyle])
 
   // console.log(paths)
   useEffect(()=>{
     // getcontext  获取canvas绘制接口
     setCtx(canvas.current.getContext('2d'))
   },[canvas, path, ctx])
-
-  // useEffect(()=>{
-  //   if (inputParams.isInputMove){
-  //     canvas.current.onMouseMove = e => handleDraw(e, DURING)
-  //     canvas.current.onMouseUp = e => handleDraw(e, END)
-  //     canvas.current.onMouseLeave = e => handleDraw(e, END)
-  //   }
-  // })
 
   useEffect(()=>{
     // 更新后 绘制图片
@@ -139,6 +130,14 @@ function MainCanvas(props) {
     }
     setDrawImg({width,height})
   },[ctx, width, height, img, pen.rgb, paths, shouldUpdate, updateCanvas, drawImg.width, drawImg.height, setShouldUpdate])
+
+  // useEffect(()=>{
+  //   if (inputParams.isInputMove){
+  //     canvas.current.onMouseMove = e => handleDraw(e, DURING)
+  //     canvas.current.onMouseUp = e => handleDraw(e, END)
+  //     canvas.current.onMouseLeave = e => handleDraw(e, END)
+  //   }
+  // })
   
   // 画笔绘制方法
   function draw(x,y){
@@ -237,62 +236,14 @@ function MainCanvas(props) {
         inputContent: '',
         contentEditable: true,
         border: '1px dashed #555',
-        cursor: 'text'
+        cursor: 'text',
+        pen: deepCopy(pen)
       }
       inputParams.push(inputParam)
       setInputParams(deepCopy(inputParams))
       setIsInk(false)
       setPen({...pen, isDrawing: false})
-      // if(isInputMove){
-      //   setInputParams({
-      //     ...inputParams,
-      //     originLeft: e.pageX,
-      //     originTop: e.pageY,
-      //     isInputMove,
-      //   })
-      //   return
-      // }
-      // if (inputParams.display === 'none'){
-      //   setInputParams({
-      //     ...inputParams,
-      //     left: offsetX,
-      //     top: offsetY,
-      //     display: 'inline',
-      //     inputContent: '',
-      //   })        
-      // } 
-      // else {
-      //   if (inputParams.inputContent){
-      //     drawText(offsetX, offsetY)
-      //     setPath({
-      //       ...path,
-      //       type: penType,
-      //       trail: inputParams
-      //     })          
-      //   }
-      //   setInputParams({
-      //     inputParams,
-      //     display: 'none',
-      //   })
-      // }
     }
-    // drawMethods[TEXT][DURING] = () => {
-    //   console.log('a')
-    //   if (!inputParams.isInputMove) return
-    //   console.log(e.pageX-inputParams.originLeft)
-    //   setInputParams({
-    //     ...inputParams,
-    //     left: inputParams.left + e.pageX - inputParams.originLeft,
-    //     top: inputParams.top + e.pageY - inputParams.originTop,
-    //   })
-    // }
-    // drawMethods[TEXT][END] = () => {
-    //   if(inputParams.isInputMove) return
-    //   setInputParams({
-    //     ...inputParams,
-    //     isInputMove: false,
-    //   })
-    // }
 
     // -----------按下鼠标 开启绘画模式--------------
     statusMethods[START] = () => {
@@ -482,9 +433,10 @@ function MainCanvas(props) {
             // onInput={e => {console.log( e.target.innerText )}}
             style={{
               ...inputParam,
-              fontSize: pen.fontSize,
-              fontFamily: pen.fontFamily,
-              color: pen.rgb
+              zIndex: pen.penType===TEXT?2:0,
+              fontSize: inputParam.pen?inputParam.pen.fontSize : pen.fontSize,
+              fontFamily: inputParam.pen?inputParam.pen.fontFamily : pen.fontFamily,
+              color: inputParam.pen?inputParam.pen.rgb : pen.rgb
             }}/>
         })
       }
